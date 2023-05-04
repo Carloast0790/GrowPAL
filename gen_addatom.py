@@ -229,8 +229,7 @@ def addition_b(original_molecule,atom_list,neighbor_dict,species):
             b_vect = np.array([aux_atmb.xc,aux_atmb.yc,aux_atmb.zc])
             # find the vector that points right in between the original atom and its neighbor and normalize it
             p_vect = (a_vect + b_vect) / 2
-            c = 0.1
-            add_vect = np.array([p_vect[0]+c,p_vect[1]+c,p_vect[2]+c])
+            add_vect = np.array([p_vect[0],p_vect[1],p_vect[2]])
             # and add in there the new atom
             n_atm = Atom(species,add_vect[0],add_vect[1],add_vect[2])
             d = atom_molecule_dist(n_atm,cp_mol)
@@ -246,7 +245,6 @@ def addition_b(original_molecule,atom_list,neighbor_dict,species):
             cp_mol.i = 'midd_point_' + cp_mol.i
             molist_out.append(cp_mol)
     return molist_out
-
 #------------------------------------------------------------------------------------------
 def addition_c(original_molecule,atom_list,neighbors_dict,species):
     '''
@@ -264,41 +262,38 @@ def addition_c(original_molecule,atom_list,neighbors_dict,species):
     for a in atom_list:
         # find the triangles composed by each atom in the list
         triangles = triangle_finder(neighbors_dict,a)
+        c = 1
         for t in triangles:
-            # for each of these triangles, check if it has been visited already
             if t in visited_t:
                 continue
-            # if it hasn't and the atoms in the list belong to the furthest atoms, then make the addition
-            # if t[0] in atom_list and t[1] in atom_list and t[2] in atom_list:
-            add_mol = copymol(original_molecule)
-            # that is, get all the three vectors and its middle point
-            atm1 = add_mol.atoms[t[0]]
-            v1 = np.array([atm1.xc,atm1.yc,atm1.zc])
-            atm2 = add_mol.atoms[t[1]]
-            v2 = np.array([atm2.xc,atm2.yc,atm2.zc])        
-            atm3 = add_mol.atoms[t[2]]
-            v3 = np.array([atm3.xc,atm3.yc,atm3.zc])
-            mid_vect = (v1 + v2 + v3) / 3
-            # to ensure that the new atom is above the triangle, find its plane
-            c_vect1 = v2-v1
-            c_vect2 = v3-v1
-            # find a perpendicular unit vector to this plane
-            c_vect = np.cross(c_vect1,c_vect2)
-            n = np.linalg.norm(c_vect)
-            c_vect = c_vect / n
-            # and translate the vector in between the triangle to this new point
-            dot_vect = np.dot(c_vect,mid_vect)
-            if dot_vect < 0:
-                c_vect = (-1) * c_vect
-            add_vect = (mid_vect + c_vect) * 1.1
-            # add the new atom in there and add this molecule to the molist_out
-            add_atom = Atom(species,add_vect[0],add_vect[1],add_vect[2])
-            add_mol.add_atom(add_atom)
-            add_mol.i = 'triangle_' + add_mol.i
-            molist_out.append(add_mol)
-            visited_t.append(t)
+            if t[0] in atom_list and t[1] in atom_list and t[2] in atom_list:
+                add_mol = copymol(original_molecule)
+                # get all the three vectors and its middle point
+                atm1 = add_mol.atoms[t[0]]
+                v1 = np.array([atm1.xc,atm1.yc,atm1.zc])
+                atm2 = add_mol.atoms[t[1]]
+                v2 = np.array([atm2.xc,atm2.yc,atm2.zc])        
+                atm3 = add_mol.atoms[t[2]]
+                v3 = np.array([atm3.xc,atm3.yc,atm3.zc])
+                mid_vect = (v1 + v2 + v3) / 3
+                # to ensure that the new atom is above the triangle, find its plane
+                c_vect1 = v2-v1
+                c_vect2 = v3-v1
+                # find a perpendicular unit vector to this plane
+                c_vect = np.cross(c_vect1,c_vect2)
+                n = np.linalg.norm(c_vect)
+                c_vect = c_vect / n
+                dot_vect = np.dot(c_vect,mid_vect)
+                if dot_vect < 0:
+                    c_vect = (-1) * c_vect
+                add_vect = (mid_vect + c_vect) * 1.1
+                # add the new atom in there and add this molecule to the molist_out
+                add_atom = Atom(species,add_vect[0],add_vect[1],add_vect[2])
+                add_mol.add_atom(add_atom)
+                add_mol.i = 'triangle_' + add_mol.i
+                molist_out.append(add_mol)
+                visited_t.append(t)
     return molist_out
-
 #------------------------------------------------------------------------------------------
 def random_addition(original_molecule, atom_list, species):
     '''
@@ -358,28 +353,38 @@ def make_many_rand(molist_in, species):
         mtx = conectmx(org_mol)
         # find a dict with all the neighbors
         all_neighbors = neighbor_finder(mtx)
-        if len(org_mol.atoms) > 20:
+        if len(org_mol.atoms) > 10:
             # find the inequivalent atoms of the molecule
             inequivalent, equivalent = inequivalent_finder(org_mol)
+            # print('largo inequivalentes',len(inequivalent))
             elegible_atoms = []
             # perform the BFS algorithm to find the outter atoms
             bfs_atoms= bfs_algorithm(org_mol,all_neighbors)
             outer_atoms, second_outer = bfs_atoms[-1], bfs_atoms[-2]
+            # print('largo externos',len(outer_atoms))
             for i in inequivalent:
-                if i in outer_atoms or i in second_outer: 
+                # if i in outer_atoms or i in second_outer: 
+                if i in outer_atoms: 
                     elegible_atoms.append(i)
         else:
             elegible_atoms = []
             [elegible_atoms.append(i) for i in range(len(org_mol.atoms))]
+        # print('elegibles',len(elegible_atoms))
         # make the additions of each type
+        # print('----- mol -----')
         list_a = addition_a(org_mol,elegible_atoms,species)
+        # print('despues de adicion a', len(list_a))
         molist_out.extend(list_a)
         list_b = addition_b(org_mol,elegible_atoms,all_neighbors,species)
+        # print('despues de adicion b', len(list_b))
         molist_out.extend(list_b)
         list_c = addition_c(org_mol,elegible_atoms,all_neighbors,species)
+        # print('despues de adicion c', len(list_c))
         molist_out.extend(list_c)
-        list_d = random_addition(org_mol,elegible_atoms,species)
-        molist_out.extend(list_d)
+        # list_d = random_addition(org_mol,elegible_atoms,species)
+        # molist_out.extend(list_d)
+        # print('totales añadidos',len(molist_out))
+        # break
     fopen = open(log_file,'a')
     for i,m in enumerate(molist_out):
         print('initial' + str(i+1).zfill(3) + '_' + m.i, file=fopen)
@@ -389,7 +394,7 @@ def make_many_rand(molist_in, species):
 #------------------------------------------------------------------------------------------
 def run_sample():
     from utils.libmoleculas import readxyzs, writexyzs
-    m = readxyzs('pdc2.xyz')
-    l = make_many_rand(m,'Cu')
-    writexyzs(l,'tests.xyz')
+    m = readxyzs('lj75.xyz')[:40]
+    l = make_many_rand(m,'O')
+    writexyzs(l,'tests_initial.xyz')
 # run_sample()

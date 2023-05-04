@@ -138,15 +138,15 @@ def display_mol_info(moleculein, flag, stage=0):
     print("-------------------------------------------------------------------", file=fopen)
     print("------------------------- SUMMARY STAGE %d -------------------------" %(stage), file=fopen)
     fopen.close()
-    molzz = sort_by_energy(moleculein,1)
     fopen = open(log_file,'a')
     if flag == 'gulp':
         print("Number File-Name   Energy (eV)     Delta-E  NT", file=fopen)
     else:
         print("Number File-Name  Energy (kcal/mol) Delta-E  NT", file=fopen)
     fopen.close()
-    for ii, imol in enumerate(molzz):
-        deltae=imol.e - molzz[0].e
+    for ii, imol in enumerate(moleculein):
+        # print(imol.e)
+        deltae=imol.e - moleculein[0].e
         nt = imol.c[0]
         fopen = open(log_file,'a')
         jj = str(ii+1).zfill(5)
