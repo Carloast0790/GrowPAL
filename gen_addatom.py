@@ -10,7 +10,6 @@ log_file = get_a_str('output_file','glomos_out.txt')
 def closest_atm_to_cm(moleculein):
     '''
     This function finds the atom that is closest to the center of mass.
-
     in : moleculein (Molecule); The molecule from wich the atom will be obtained
     out: label (int); The position of the atom in the molecule.atoms list
     '''
@@ -58,7 +57,6 @@ def bfs_algorithm(moleculein, neighbors_dict):
     '''
     This algorithm labels iteratively the neighbors of the atoms which is closer to the
     molecule's center of mass and returns a list with all the 'n' neighbors labeled.
-
     in: moleculein (Molecule); The molecule on which the algorithm will be performed
     out: out_list (list); list of list like [[closest atom],[first neighbors],...,[last neighbors]] 
     '''
@@ -133,7 +131,6 @@ def inequivalent_finder(moleculeglomos, tolerance=0.3, eigen_tolerance=0.008, ma
 def triangle_finder(neighbors_dict,atom):
     '''
     This function finds the triangles formed by the binded atoms in a molecule
-
     in: neighbors_dict (Dict), the keys are position of the atom in the Molecule.atoms list, 
         and the values are a list of all their neighbors
         atom (int), the atom whose triangles are to be found
@@ -160,7 +157,6 @@ def addition_a(original_molecule, atom_list, species):
     '''
     This function gets a list of atoms, extracts their position vector and radially, to a 
     safe distance, adds one extra atom of the required species to the molecule.
-
     in: original_molecule (Molecule), the molecule on which the new atoms will be added
         atoms_list (list[int]), a list of the atoms upon which the new atom will be added
         species (str), the chemical symbol of the atom that is going to be added
@@ -197,7 +193,6 @@ def addition_b(original_molecule,atom_list,neighbor_dict,species):
     '''
     This function adds one atom of the required species in between two of the neighboring atoms 
     of the ones contained in the atom_list.
-
     in: original_molecule (Molecule), the molecule on which the new atoms will be added
         atoms_list (list[int]), the atoms that will be used to add the new one
         neighbor_dict (Dict,{atm:[neigbors]}), a dictionary with all the neighbors of the atom_list
@@ -249,7 +244,6 @@ def addition_b(original_molecule,atom_list,neighbor_dict,species):
 def addition_c(original_molecule,atom_list,neighbors_dict,species):
     '''
     This function adds one atom of the required species in the triangle formed by its neighbors.
-
     in: original_molecule (Molecule), the molecule on which the new atoms will be added
         atoms_list (list[int]), the atoms that will be used to add the new one
         neighbor_dict (Dict,{atm:[neigbors]}), a dictionary with all the neighbors of the atom_list
@@ -299,11 +293,9 @@ def random_addition(original_molecule, atom_list, species):
     '''
     This function gets one molecule and randomly adds one atom into one of the existing ones 
     to a safe distance, taking into consideration that this new atom is not one of the inequivalent ones.
-
     in: original_molecule (Molecule), the molecule that will receive the addition
         atom_list (list[int]); The equivalent atoms that will receive a random addition
         species (str); The species of the atom to be added
-
     out: molist_out (list[Molecule]); a list that contains all the molecules with the extra atom    
     '''
     from utils.general import randunitvector
@@ -338,10 +330,8 @@ def make_many_rand(molist_in, species):
     This function masters all the above to add a new atom to each of the inequivalent atoms that belong
     to the outter layer of the molecule. It uses two types of addition: a.- Directly above of the atoms and 
     b.- in between two adjacent neighbors.
-
     in: molist_in (list[Molecule]); all the molecules that will receive an extra atom
         species (str); the species of the atom to be additioned
-
     out: molist_out (list[Molecule]);  a list that contains all the molecules with the extra atom 
     '''
     molist_out = []
@@ -353,7 +343,7 @@ def make_many_rand(molist_in, species):
         mtx = conectmx(org_mol)
         # find a dict with all the neighbors
         all_neighbors = neighbor_finder(mtx)
-        if len(org_mol.atoms) > 10:
+        if len(org_mol.atoms) > 19:
             # find the inequivalent atoms of the molecule
             inequivalent, equivalent = inequivalent_finder(org_mol)
             # print('largo inequivalentes',len(inequivalent))

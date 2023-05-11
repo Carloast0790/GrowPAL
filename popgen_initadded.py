@@ -9,10 +9,12 @@ def make_molecules_check_added(molist, symbol):
     molist_out = make_many_rand(molist, symbol)
     fopen = open(log_file,'a')
     print('-------------------------------------------------------------------',file=fopen)
+    print('-------------------------------------------------------------------',file=fopen)
     print('After additions we have '+str(len(molist_out))+' structures',file=fopen)
     molist_out = kick_similar_molecules(molist_out, tol_gen,1)
     print('After discrimination we have '+str(len(molist_out))+' structures',file=fopen)
     print('-------------------------------------------------------------------',file=fopen)
+    print('-------------------------------------------------------------------\n',file=fopen)
     fopen.close()
     return molist_out
 

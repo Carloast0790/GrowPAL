@@ -12,11 +12,11 @@ from gaussian.multiplicity import multiplicity_compared, get_charge_and_multi
 #====================================================================
 bilfile = get_bilfile()
 log_file = get_a_str('output_file','glomos_out.txt')
-nofstages = get_a_int('number_of_stages', 2)
-emax =  get_a_float('energy_range', 99.0)
+nofstages = get_a_int('number_of_stages', 1)
+emax =  get_a_float('energy_range', 10.0)
 sim = get_a_float('similarity_tol', 0.96)
 ncnt = get_a_str('disc_unconnected_opt', 'off')
-zed = get_a_int('zero_energy_difference', 0)
+zed = get_a_int('zero_energy_difference', 1)
 dbop = get_a_int('option', 2)
 frag_1 = get_a_str('fragment_1', 'off')
 frag_2 = get_a_str('fragment_2', 'off')
@@ -54,7 +54,7 @@ def build_population_0():
                     fopen.close()
                     sys.exit() 
             moleculeout = align_all_inertia_axis_x(mol99)
-            moleculeout = rename_molecule(mol99,'initial',4)
+            moleculeout = rename_molecule(mol99,'initial',5)
             writexyzs(moleculeout, initialfile)
         else:
             fopen = open(log_file,'a')
@@ -71,13 +71,13 @@ def build_population_0():
     return moleculeout
 #====================================================================
 def run_calculator(moleculelist, stage=0):
-    folder='stage'+str(stage)+'/'
+    folder='stage'+str(stage+1)+'/'
     fopen = open(log_file,'a')
     print("-------------------------------------------------------------------", file=fopen)
     print("------------------- LOCAL OPTIMIZATION: STAGE %d -------------------" %(stage), file=fopen)
     fopen.close()
     if flag=='gaussian':
-        blockg='gaussian'+str(stage)
+        blockg='gaussian'+str(stage+1)
         from gaussian.calculator_all import calculator_gaussian_all_check
         moleculeout=calculator_gaussian_all_check(moleculelist, folder, blockg, stage)
     if flag=='vasppara':
@@ -100,11 +100,12 @@ def run_calculator(moleculelist, stage=0):
         from gulp.calculator_all import calculator_gulp_all_check
         from utils.libmoleculas  import sort_by_stoichiometry
         mol00=sort_by_stoichiometry(moleculelist)
-        blockname='gulp'+str(stage)
+        blockname='gulp'+str(stage+1)
         moleculeout=calculator_gulp_all_check(mol00, folder, blockname, stage)
     return moleculeout
 #====================================================================
 def run_discrimination(moleculelist, stage=0):
+    folder='stage'+str(stage+1)+'/'
     fopen = open(log_file,'a')
     print("-------------------------------------------------------------------", file=fopen)
     print("----------------------DISCRIMINATION  PROCESS----------------------", file=fopen)
@@ -155,14 +156,13 @@ def display_mol_info(moleculein, flag, stage=0):
 #====================================================================
 flag = get_a_str('calculator','gaussian')
 mol00 = build_population_0()
-for stage in range(1,nofstages+1):
-    basenm = 'stage'+str(stage)
+for stage in range(nofstages):
+    basenm = 'stage'+str(stage+1)
     folder = basenm+'/'
-    moluu = rename_molecule(mol00, basenm, 4)
+    moluu = rename_molecule(mol00, basenm, 5)
     mol00 = run_calculator(moluu, stage)
     mol00 = run_discrimination(mol00, stage)
     if flag == 'gaussian':
-        folder = 'stage'+str(stage)+'/'
         from gaussian.get_geometry import display_info_gaussian
         display_info_gaussian(mol00, folder, fopen)
     else:
@@ -174,5 +174,3 @@ print ("GLOMOS HAS FINISHED SUCCESSFULLY", file=fopen)
 print ("-------------------------------------------------------------", file=fopen)
 fopen.close()
 # exit()
-
-
