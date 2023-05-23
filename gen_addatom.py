@@ -153,7 +153,7 @@ def triangle_finder(neighbors_dict,atom):
     return triangles
 
 #------------------------------------------------------------------------------------------
-def addition_a(original_molecule, atom_list, species):
+def radial_addition(original_molecule, atom_list, species):
     '''
     This function gets a list of atoms, extracts their position vector and radially, to a 
     safe distance, adds one extra atom of the required species to the molecule.
@@ -184,12 +184,12 @@ def addition_a(original_molecule, atom_list, species):
             factor = factor + 0.0001
         # add this new atom to the molecule and the molecule to the out_list
         cp_mol.add_atom(n_atm)
-        cp_mol.i = 'radial_' + cp_mol.i
+        cp_mol.c = 'radial'
         molist_out.append(cp_mol)
     return molist_out
 
 #------------------------------------------------------------------------------------------
-def addition_b(original_molecule,atom_list,neighbor_dict,species):
+def bridge_addition(original_molecule,atom_list,neighbor_dict,species):
     '''
     This function adds one atom of the required species in between two of the neighboring atoms 
     of the ones contained in the atom_list.
@@ -237,11 +237,11 @@ def addition_b(original_molecule,atom_list,neighbor_dict,species):
                 factor = factor + 0.0001
             # finally, add this atom to the molecule and add the molecule to the molist_out
             cp_mol.add_atom(n_atm)
-            cp_mol.i = 'midd_point_' + cp_mol.i
+            cp_mol.c = 'bridge'
             molist_out.append(cp_mol)
     return molist_out
 #------------------------------------------------------------------------------------------
-def addition_c(original_molecule,atom_list,neighbors_dict,species):
+def hollow_addition(original_molecule,atom_list,neighbors_dict,species):
     '''
     This function adds one atom of the required species in the triangle formed by its neighbors.
     in: original_molecule (Molecule), the molecule on which the new atoms will be added
@@ -284,7 +284,7 @@ def addition_c(original_molecule,atom_list,neighbors_dict,species):
                 # add the new atom in there and add this molecule to the molist_out
                 add_atom = Atom(species,add_vect[0],add_vect[1],add_vect[2])
                 add_mol.add_atom(add_atom)
-                add_mol.i = 'triangle_' + add_mol.i
+                add_mol.c = 'radial'
                 molist_out.append(add_mol)
                 visited_t.append(t)
     return molist_out
@@ -321,7 +321,7 @@ def random_addition(original_molecule, atom_list, species):
             d = atom_molecule_dist(try_atm,cp_mol)
         # finally add this atom to the molecule and the molecule to the molist_out
         cp_mol.add_atom(try_atm)
-        cp_mol.i = 'rand_add_' + cp_mol.i
+        cp_mol.c = 'radial'
         molist_out.append(cp_mol)
     return molist_out
 #------------------------------------------------------------------------------------------
@@ -346,38 +346,29 @@ def make_many_rand(molist_in, species):
         if len(org_mol.atoms) > 19:
             # find the inequivalent atoms of the molecule
             inequivalent, equivalent = inequivalent_finder(org_mol)
-            # print('largo inequivalentes',len(inequivalent))
             elegible_atoms = []
             # perform the BFS algorithm to find the outter atoms
             bfs_atoms= bfs_algorithm(org_mol,all_neighbors)
             outer_atoms, second_outer = bfs_atoms[-1], bfs_atoms[-2]
-            # print('largo externos',len(outer_atoms))
-            for i in inequivalent:
-                # if i in outer_atoms or i in second_outer: 
+            for i in inequivalent: 
                 if i in outer_atoms: 
                     elegible_atoms.append(i)
         else:
             elegible_atoms = []
             [elegible_atoms.append(i) for i in range(len(org_mol.atoms))]
-        # print('elegibles',len(elegible_atoms))
         # make the additions of each type
-        # print('----- mol -----')
-        list_a = addition_a(org_mol,elegible_atoms,species)
-        # print('despues de adicion a', len(list_a))
+        list_a = radial_addition(org_mol,elegible_atoms,species)
         molist_out.extend(list_a)
-        list_b = addition_b(org_mol,elegible_atoms,all_neighbors,species)
-        # print('despues de adicion b', len(list_b))
+        list_b = bridge_addition(org_mol,elegible_atoms,all_neighbors,species)
         molist_out.extend(list_b)
-        list_c = addition_c(org_mol,elegible_atoms,all_neighbors,species)
-        # print('despues de adicion c', len(list_c))
+        list_c = hollow_addition(org_mol,elegible_atoms,all_neighbors,species)
         molist_out.extend(list_c)
         # list_d = random_addition(org_mol,elegible_atoms,species)
         # molist_out.extend(list_d)
-        # print('totales añadidos',len(molist_out))
-        # break
     fopen = open(log_file,'a')
     for i,m in enumerate(molist_out):
-        print('initial' + str(i+1).zfill(3) + '_' + m.i, file=fopen)
+        si=str(i+1).zfill(5)
+        print('stage1%s from %s growtype %s' %(si,m.i,m.c), file=fopen)
     fopen.close()
     return molist_out
 
