@@ -1,0 +1,56 @@
+# GROwth PAttern ALgorithm (GrowPAl)
+#
+# Authors: 
+# (1) Carlos Lopez-Castro, (2) Filiberto Ortiz-Chi, and (1) Gabriel Merino
+#
+# (1) Departamento de Fisica Aplicada,
+#     Centro de Investigacion y de Estudios Avanzados, Unidad Merida,
+#     Km 6 Antigua Carretera a Progreso, A.P. 73, Cordemex, 97310 Merida, Yucatan, Mexico
+# (2) CONACYT-Universidad Juarez Autonoma de Tabasco,
+#     Centro de Investigacion de Ciencia y Tecnologia Aplicada de Tabasco,
+#     Cunduacan 86690, Tabasco, Mexico.
+
+#GLOMOS 1.0
+
+option                  2
+
+## Initial population
+cluster                 mo30.xyz
+atom                    Mo
+addition_types          h i
+sym_restrict            off
+take_isomers            5
+
+## Discrimination
+similarity_tol          0.95
+disc_unconnected_opt    off
+energy_range            1.0
+
+## Calculation parameters
+zero_energy_difference  1
+number_of_stages        1
+latt_space              40.0
+
+## Queue system and Computer resources
+calculator              gulp
+qsys                    local
+
+---GULP1---
+opti conj nosymmetry conv
+switch_minimiser bfgs gnorm 0.001
+vectors
+LATTICEVECTORS
+frac
+COORDINATES
+space
+1
+species
+Mo  0.0
+lennard epsilon
+Mo Mo 1.000 3.000 0.0 12.0
+maxcyc 850
+---GULP1---
+
+---GULP.CONF---
+exe_gulp=/home/carlos/bin/gulp
+---GULP.CONF---

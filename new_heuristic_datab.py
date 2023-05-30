@@ -18,7 +18,6 @@ sim = get_a_float('similarity_tol', 0.96)
 ncnt = get_a_str('disc_unconnected_opt', 'off')
 zed = get_a_int('zero_energy_difference', 1)
 dbop = get_a_int('option', 2)
-
 frag_1 = get_a_str('cluster', 'off')
 frag_2 = get_a_str('atom', 'off')
 #====================================================================
@@ -53,7 +52,7 @@ def build_population_0():
                     print('The multiplicity seems to be incompatible, double check this',file=fopen)
                     print('------------------------------------------------------------',file=fopen)
                     fopen.close()
-                    sys.exit()
+                    sys.exit() 
             moleculeout = align_all_inertia_axis_x(mol99)
             moleculeout = rename_molecule(mol99,'initial',5)
             writexyzs(moleculeout, initialfile)
@@ -156,7 +155,7 @@ def display_mol_info(moleculein, flag, stage=0):
         fopen.close()
 #====================================================================
 
-def built_equi_list(molist_in, divisor):
+def get_equilen_list(molist_in, divisor):
     org_len = len(molist_in)
     d = org_len//divisor
     r = org_len%divisor
@@ -171,38 +170,37 @@ def built_equi_list(molist_in, divisor):
         a = molist_in[x1:y1]
         all_list.append(a)
         x1 = x1+j
-    cont = 0
-    # for i in range(len(all_list)):
-    #     n_folder = 'parallel_'+str(cont)
-    #     if not os.path.exists(n_folder): os.system('mkdir %s' %(n_folder))
-    #     cont = cont + 1
     return all_list
 
-
 flag = get_a_str('calculator','gaussian')
+div = get_a_int('num_of_parallel',1)
+
 mol00 = build_population_0()
+n_mol00 = get_equilen_list(mol00,div)
 for stage in range(nofstages):
-    basenm = 'stage'+str(stage+1)
-    folder = basenm+'/'
-    moluu = rename_molecule(mol00, basenm, 5)
-    mol00 = run_calculator(moluu, stage)
-    mol00 = run_discrimination(mol00, stage)
-    if mol00:
-        if flag == 'gaussian':
-            from gaussian.get_geometry import display_info_gaussian
-            display_info_gaussian(mol00, folder, fopen)
+    c = 0
+    for l in n_mol00:
+        basenm = 'stage'+str(stage+1)+'par'+str(c+1)
+        folder = basenm+'/'
+        moluu = rename_molecule(mol00, basenm, 5)
+        l = run_calculator(moluu, stage)
+        l = run_discrimination(l, stage)
+        if l:
+            if flag == 'gaussian':
+                from gaussian.get_geometry import display_info_gaussian
+                display_info_gaussian(l, folder, fopen)
+            else:
+                display_mol_info(l, flag, stage)
         else:
-            display_mol_info(mol00, flag, stage)
-    else:
-        fopen = open(log_file,'a')
-        print ("-------------------------------------------------------------", file=fopen)
-        print ("All structures were discriminated, GLOMOS stopped", file=fopen)
-        print ("-------------------------------------------------------------", file=fopen)
-        fopen.close()
-        sys.exit()
-    writexyzs(mol00, basenm+'.xyz', 1)
+            fopen = open(log_file,'a')
+            print ("-------------------------------------------------------------", file=fopen)
+            print ("All structures were discriminated, GrowPAL stopped", file=fopen)
+            print ("-------------------------------------------------------------", file=fopen)
+            fopen.close()
+            sys.exit()
+        writexyzs(l, basenm+'.xyz', 1)
 fopen = open(log_file,'a')
 print ("-------------------------------------------------------------", file=fopen)
-print ("GLOMOS HAS FINISHED SUCCESSFULLY", file=fopen)
+print ("GrowPAL HAS FINISHED SUCCESSFULLY", file=fopen)
 print ("-------------------------------------------------------------", file=fopen)
 fopen.close()
